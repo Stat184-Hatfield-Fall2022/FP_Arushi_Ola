@@ -1,0 +1,40 @@
+---
+title: "NYC Tree Census"
+author: "Arushi Singh"
+date: '`r Sys.Date()`'
+output: html_document
+---
+
+```{r Data Wrangling}
+library(readr)
+
+nyctrees1995 <- read_csv("/Users/singh/Desktop/stat 184/treecensusdata/new_york_tree_census_1995.csv")
+trees1995 <- nyctrees1995[c("recordid","address", "borough", "zip_new","species","status","spc_common")]
+trees1995
+
+nyctrees2005 <- read_csv("/Users/singh/Desktop/stat 184/treecensusdata/new_york_tree_census_2005.csv")
+trees2005 <- nyctrees2005[c("objectid_1","location_1","boroname", "zipcode","spc_common", "status")]
+trees2005[complete.cases(trees2005), ]
+
+nyctrees2015 <- read_csv("/Users/singh/Desktop/stat 184/treecensusdata/new_york_tree_census_2015.csv")
+trees2015 <- nyctrees2015[c("tree_id","address","boroname", "zipcode","spc_common", "health")]
+trees2015[complete.cases(trees2015), ]
+```
+
+```{r Analysis1995}
+table(trees1995$borough, trees1995$status)
+#find 5 most common species?
+mostPopular <- sort(summary(as.factor(trees1995$spc_common), decreasing=TRUE)[1:5])
+#by borough?
+```
+```{r Analysis2005}
+#table(trees2005fix$boroname, trees2005fix$status)
+```
+
+```{r Analysis 2015}
+table(trees2015$boroname, trees2015$health)
+mostPopular2015 <- sort(summary(as.factor(trees2005$spc_common), decreasing=TRUE)[1:5])
+```
+
+
+
