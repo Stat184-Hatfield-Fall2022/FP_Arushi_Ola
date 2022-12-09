@@ -6,35 +6,307 @@ output: html_document
 ---
 
 ```{r Data Wrangling}
+#loading packages
+
 library(readr)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
 
-nyctrees1995 <- read_csv("/Users/singh/Desktop/stat 184/treecensusdata/new_york_tree_census_1995.csv")
-trees1995 <- nyctrees1995[c("recordid","address", "borough", "zip_new","species","status","spc_common")]
-trees1995
+##Bringing in the newyork tree data sets for every 10 years 
 
-nyctrees2005 <- read_csv("/Users/singh/Desktop/stat 184/treecensusdata/new_york_tree_census_2005.csv")
-trees2005 <- nyctrees2005[c("objectid_1","location_1","boroname", "zipcode","spc_common", "status")]
-trees2005[complete.cases(trees2005), ]
+nytrees_1995 <- read_csv("1995_Street_Tree_Census.csv")
+nytrees_2005 <- read_csv("2005_Street_Tree_Census.csv")
+nytrees_2015 <- read_csv("2015_Street_Tree_Census_-_Tree_Data.csv")
+#nytrees_species <- read_csv("archive/new_york_tree_species.csv")
 
-nyctrees2015 <- read_csv("/Users/singh/Desktop/stat 184/treecensusdata/new_york_tree_census_2015.csv")
-trees2015 <- nyctrees2015[c("tree_id","address","boroname", "zipcode","spc_common", "health")]
-trees2015[complete.cases(trees2015), ]
+#Data wrangling
+
+nytrees_1995 <- nytrees_1995 %>%
+  select(Spc_Common,Condition,Borough,Longitude,Latitude,Zip_New)
+
+nytrees_2005 <- nytrees_2005 %>%
+  select(spc_common,status,boroname,latitude,longitude,zipcode)
+
+nytrees_2015 <- nytrees_2015 %>%
+  select(spc_common,health,problems,borough,latitude,longitude,postcode)
+
 ```
 
-```{r Analysis1995}
-table(trees1995$borough, trees1995$status)
-#find 5 most common species?
-mostPopular <- sort(summary(as.factor(trees1995$spc_common), decreasing=TRUE)[1:5])
-#by borough?
-```
-```{r Analysis2005}
-#table(trees2005fix$boroname, trees2005fix$status)
+```{r Population Density}
+## creating map Visualization
+##using ggmaps 
+
+register_google(key = "AIzaSyC7mdyVg4lKT5RGVW9GDIZB5x9apdKO9zY", write = TRUE)
+
+newyork.map <- get_map(location = 'New York', maptype= "hybrid",source='google',zoom=12)
+
+nytrees_1995_map <- ggmap(newyork.map) + 
+  geom_point(data=nytrees_1995, aes(x=Longitude,y=Latitude,color= "green"),size=.05)+
+  theme(axis.ticks = element_blank(), axis.text = element_blank())
+
+nytrees_2005_map <- ggmap(newyork.map) + 
+  geom_point(data = nytrees_2005, aes(x=longitude,y=latitude,colour = "green"),size=.05)+
+  theme(axis.ticks = element_blank(), axis.text = element_blank())
+        
+nytrees_2015_map <-ggmap(newyork.map) + 
+  geom_point(data = nytrees_2015, aes(x=longitude,y=latitude,colour = "green"),size=.05)+ 
+  theme(axis.ticks = element_blank(), axis.text = element_blank())
 ```
 
-```{r Analysis 2015}
-table(trees2015$boroname, trees2015$health)
-mostPopular2015 <- sort(summary(as.factor(trees2005$spc_common), decreasing=TRUE)[1:5])
+The figures above show that from 1995 to 2015, the number of trees have only increased. Upon futher inspection, you can see that these increases are initally mostly in area, but by 2015 the trees are also incredibly dense. This dramatic increase is still continuing today, as an effort from the New York Parks department, as well as Trees for Public Health to help mitigate the effects of climate change on the city, and is arguably the cheapest way to do so. By planting more trees, New York City's Tree Canopy is growing. A tree canopy, by the simplist definition are the cover provided by trees. Tree canopies help mitigate climate change because they store CO2, resulting in less of the gas contributing to the greenhouse gases effect. Tree canopies also reduce energy use by cooling neighborhoods by up to 10 degrees, without reducing energy needs. All in all, this increase in tree population has only been benefitting the people of New York City. 
+
+```{r Comparing Health 1995}
+##color filled by the condition of the tree
+##Labeling 
+
+#1995
+nytrees_1995 %>% filter(Condition %in% c("Good", "Excellent", "Poor", "Dead"))
+nytrees_1995_map = ggmap(newyork.map) + geom_point(data = nytrees_2005, aes(x=longitude,y=latitude,colour = status),size=.05)+
+  scale_color_manual(
+    values = c(Dead = "#282626",
+               Excellent = "#16DE0C",
+               Good = "#3D6C08",
+               Poor = "#E50E0E")
+  ) +
+  theme_minimal()
 ```
+
+The figure above displays the location of all of the trees in the dataset, but also notes the health of each tree. As we compare the two graphs, we can see that the trees that are dead or in poor health are in heavily industrialized areas or in less populated areas. This leads me to infer that these trees simply aren't receiving the care that they need to thrive. The trees in excellent and good health look like they are concentrated in parks, as well as being intentionally planted in the city. 
+
+```{r Comparing Health 2005}
+#2005
+nytrees_2005_map = ggmap(newyork.map) + 
+  geom_point(data = nytrees_2005, aes(x=longitude,y=latitude,colour = status),size=.05)+
+  scale_color_manual(
+    values = c(Dead = "#282626",
+               Excellent = "#16DE0C",
+               Good = "#3D6C08",
+               Poor = "#E50E0E")
+  ) +
+  theme_minimal()
+```
+
+In 2005, we can see that despite the seemingly good news that the tree population had increased, many of those trees were in poor health or had already died. Some good news from this visualization is that the excellent to good ratio in the first visualization is much improved. In conclusion, in 2005, the Parks department still had a ways to go to improve their tree maintenance. 
+
+```{r Comparing Health 2015}
+#2015
+nytrees_2015_map = ggmap(newyork.map) + 
+  geom_point(data = nytrees_2015, aes(x=longitude,y=latitude,colour = health),size=.05)+
+scale_color_manual(
+  values = c(Fair = "#3D6C08",
+             Good = "#16DE0C",
+             Poor = "#E50E0E")  
+  ) +
+  theme_minimal()
+```
+
+By 2015, the health of trees had had much improvement and the majority of trees appear to be in good health! The ratio of good: poor trees is much improved and the overall health of the trees in the city have grown, while also maintaing the population growth rate. 
+
+As we can see from this set of visualizations, from 1995 to 2015, not only has the number of trees increased in that time frame, the overall health of them has as well. Given the city-environment, I initally expected this trend to be the opposite. However, it is incredibly motivating to see how the effort put it by the Parks department, and other New York advocacy groups are paying off and providing some protection for New Yorkers against the growing climate crisis. 
+
+
+```{r Bar Charts- Popularity}
+##Borough has the most tree
+sort(summary(as.factor(nytrees_1995$Borough), decreasing=TRUE)[1:5])
+sort(summary(as.factor(nytrees_2005$boroname), decreasing=TRUE)[1:5])
+sort(summary(as.factor(nytrees_2015$borough), decreasing=TRUE)[1:5])
+
+
+#most popolar species
+mostPopular_1995 <- sort(summary(as.factor(nytrees_1995$Spc_Common), decreasing=TRUE)[1:5])
+mostPopular_2005 <- sort(summary(as.factor(nytrees_2005$spc_common), decreasing=TRUE)[1:5])
+mostPopular_2015 <- sort(summary(as.factor(nytrees_2015$spc_common), decreasing=TRUE)[1:5])
+list(mostPopular_1995)
+list(mostPopular_2005)
+list(mostPopular_2015)
+
+#3d grapph
+
+#Visualization using Bar plot on the most common species per borough
+##needs to be fixed!!!
+species_common <- ggplot(nytrees_2015) +
+  aes(x = spc_common) +
+  geom_bar(fill = "#112446") +
+  theme_minimal() +
+  facet_wrap(vars(borough)) 
+
+
+...
+
+#Using Facet Visualization on the Health/Condition of the tree per borough
+
+Borough_condition_1995 <- nytrees_1995 %>%
+  filter(Condition %in% c("Good", "Excellent", "Poor", "Dead")) %>%
+  ggplot() +
+  aes(x = Borough, fill = Borough) +
+  geom_bar() +
+  scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               `Staten Island` = "#4B935B")
+  ) +
+  labs(
+    x = "Borough",
+    y = "Total num of Tree",
+    title = "1995 Trees Condition per Borough",
+    fill = "Boroughs"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 15L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(face = "bold"),
+    axis.title.x = element_text(face = "bold")
+  ) +
+  facet_wrap(vars(Condition))
+
+
+
+Borough_condition_2005 <- ggplot(nytrees_2005) +
+  aes(x = boroname, fill = boroname) +
+  geom_bar() +
+  scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               `Staten Island` = "#4B935B")
+  ) +
+  labs(
+    x = "Borough",
+    y = "Total num of Tree",
+    title = "2005 Trees Condition per Borough"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 15L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(face = "bold"),
+    axis.title.x = element_text(face = "bold")
+  ) +
+  facet_wrap(vars(status))
+
+
+Borough_condition_2015 <- nytrees_2015 %>%
+  filter(health %in% c("Good", "Fair", "Poor")) %>%
+  ggplot() +
+  aes(x = borough, fill = borough) +
+  geom_bar() +
+  scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               `Staten Island` = "#4B935B")
+  ) +
+  labs(
+    x = "Borough",
+    y = "Total num of Tree",
+    title = "2005 Trees Condition per Borough"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 15L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(face = "bold"),
+    axis.title.x = element_text(face = "bold")
+  )+
+  facet_wrap(vars(health))
+
+```
+
+
+
+
+```{r Most Popular Species Tables}
+### shows the top 5 species per condition
+
+#1995
+Excellent_rate_1995<- nytrees_1995 %>%
+  select(Spc_Common,Condition)  %>%
+  filter(Condition %in% "Excellent")
+
+Good_rate_1995<- nytrees_1995 %>%
+  select(Spc_Common,Condition)  %>%
+  filter(Condition %in% "Good")
+
+Poor_rate_1995<- nytrees_1995 %>%
+  select(Spc_Common,Condition)  %>%
+  filter(Condition %in% "Poor")
+
+Dead_rate_1995<- nytrees_1995 %>%
+  select(Spc_Common,Condition)  %>%
+  filter(Condition %in% "Dead")
+
+sort(summary(as.factor(Excellent_rate_1995$Spc_Common), decreasing=TRUE)[1:5])
+sort(summary(as.factor(Good_rate_1995$Spc_Common), decreasing=TRUE)[1:5])
+sort(summary(as.factor(Poor_rate_1995$Spc_Common), decreasing=TRUE)[1:5])
+sort(summary(as.factor(Dead_rate_1995$Spc_Common), decreasing=TRUE)[1:5])
+```
+
+
+```{r Most Popular Species Tables}
+#2005
+Excellent_rate_2005<- nytrees_2005 %>%
+  select(spc_common,status)  %>%
+  filter(status %in% "Excellent")
+
+Good_rate_2005<- nytrees_2005 %>%
+  select(spc_common,status)  %>%
+  filter(status %in% "Good")
+
+Poor_rate_2005<- nytrees_2005 %>%
+  select(spc_common,status)  %>%
+  filter(status %in% "Poor")
+
+Dead_rate_2005<- nytrees_2005 %>%
+  select(spc_common,status)  %>%
+  filter(status %in% "Dead")
+
+# we have to make these actual tables i think
+sort(summary(as.factor(Excellent_rate_2005$spc_common), decreasing=TRUE)[1:5])
+sort(summary(as.factor(Good_rate_2005$spc_common), decreasing=TRUE)[1:5])
+sort(summary(as.factor(Poor_rate_2005$spc_common), decreasing=TRUE)[1:5])
+sort(summary(as.factor(Dead_rate_2005$spc_common), decreasing=TRUE)[1:5])
+
+#2015 
+Good_rate_2015<- nytrees_2015 %>%
+  select(spc_common,health)  %>%
+  filter(health %in% "Good")
+
+Fair_rate_2015<- nytrees_2015 %>%
+  select(spc_common,health)  %>%
+  filter(health %in% "Fair")
+
+Poor_rate_2015<- nytrees_2015 %>%
+  select(spc_common,health)  %>%
+  filter(health %in% "Poor")
+
+mostpopGood2015 <- sort(summary(as.factor(Good_rate_2015$spc_common), decreasing=TRUE)[1:5])
+mostpopFair2015 <- sort(summary(as.factor(Fair_rate_2015$spc_common), decreasing=TRUE)[1:5])
+mostpopPoor2015 <- sort(summary(as.factor(Poor_rate_2015$spc_common), decreasing=TRUE)[1:5])
+
+```
+
+```{r}
+mostPopular <- sort(summary(as.factor(nytrees_1995$Spc_Common), decreasing=TRUE)[1:5])
+mostPopular <- as.data.frame(mostPopular)
+mostPopular
+
+ggplot(
+  data = mostPopular,
+  mapping = aes(x = Spc_Common)
+) +
+  geom_bar()
+
+```
+
 
 
 
