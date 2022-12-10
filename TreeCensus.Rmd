@@ -4,6 +4,9 @@ author: "Arushi Singh"
 date: '`r Sys.Date()`'
 output: html_document
 ---
+#Exploring the New York Tree Census 
+
+As the climate warms, there is more emphasis than ever on preserving and growing natural and natural areas. In a place like New York City, the most populated city in the United States, one would not expect this emphasis to affect change. However, New York City Parks Department, along with other private non-profit organizations have been incredibly successful in promoting the planting of new trees around the city, which benefits the community by providing greenspace and helps mitigate climate change by the increase of tree canopies. To track this change, we got datasets of the New York Tree Census, which occures every 10 years, from a website called NYCOpenData, where agencies can upload data for the public to view at their leisure. We focused on the over number/population of trees, their health, and the most popular species to track these changes. 
 
 ```{r Data Wrangling}
 #loading packages
@@ -33,6 +36,10 @@ nytrees_2015 <- nytrees_2015 %>%
 
 ```
 
+# Exploring Population Density and Growth, alongside Tree Health
+
+To start our analysis, we wanted a visualization of the most basic indicator of population growth over the years: the number of trees. 
+
 ```{r Population Density}
 ## creating map Visualization
 ##using ggmaps 
@@ -55,6 +62,8 @@ nytrees_2015_map <-ggmap(newyork.map) +
 ```
 
 The figures above show that from 1995 to 2015, the number of trees have only increased. Upon futher inspection, you can see that these increases are initally mostly in area, but by 2015 the trees are also incredibly dense. This dramatic increase is still continuing today, as an effort from the New York Parks department, as well as Trees for Public Health to help mitigate the effects of climate change on the city, and is arguably the cheapest way to do so. By planting more trees, New York City's Tree Canopy is growing. A tree canopy, by the simplist definition are the cover provided by trees. Tree canopies help mitigate climate change because they store CO2, resulting in less of the gas contributing to the greenhouse gases effect. Tree canopies also reduce energy use by cooling neighborhoods by up to 10 degrees, without reducing energy needs. All in all, this increase in tree population has only been benefitting the people of New York City. 
+
+To go further, we decided to track the health alongside the population growth.
 
 ```{r Comparing Health 1995}
 ##color filled by the condition of the tree
@@ -105,8 +114,8 @@ By 2015, the health of trees had had much improvement and the majority of trees 
 
 As we can see from this set of visualizations, from 1995 to 2015, not only has the number of trees increased in that time frame, the overall health of them has as well. Given the city-environment, I initally expected this trend to be the opposite. However, it is incredibly motivating to see how the effort put it by the Parks department, and other New York advocacy groups are paying off and providing some protection for New Yorkers against the growing climate crisis. 
 
-
-```{r Bar Charts- Popularity}
+# talk about tables
+```{r Bar Charts- Popularity, eval=FALSE, include=FALSE}
 ##Borough has the most tree
 sort(summary(as.factor(nytrees_1995$Borough), decreasing=TRUE)[1:5])
 sort(summary(as.factor(nytrees_2005$boroname), decreasing=TRUE)[1:5])
@@ -221,9 +230,6 @@ Borough_condition_2015 <- nytrees_2015 %>%
 
 ```
 
-
-
-
 ```{r Most Popular Species Tables}
 ### shows the top 5 species per condition
 
@@ -249,7 +255,6 @@ sort(summary(as.factor(Good_rate_1995$Spc_Common), decreasing=TRUE)[1:5])
 sort(summary(as.factor(Poor_rate_1995$Spc_Common), decreasing=TRUE)[1:5])
 sort(summary(as.factor(Dead_rate_1995$Spc_Common), decreasing=TRUE)[1:5])
 ```
-
 
 ```{r Most Popular Species Tables}
 #2005
@@ -294,19 +299,93 @@ mostpopPoor2015 <- sort(summary(as.factor(Poor_rate_2015$spc_common), decreasing
 
 ```
 
-```{r}
-mostPopular <- sort(summary(as.factor(nytrees_1995$Spc_Common), decreasing=TRUE)[1:5])
-mostPopular <- as.data.frame(mostPopular)
-mostPopular
+# Exploring the most Popular Species further
+
+Seeing as the most popular species haven't really changed, we decided to track those specific species health accross the years in each borough. 
+
+```{r Most Popular and Health 1995, warning=FALSE}
+library(ggplot2)
+library(tidyverse)
+
+mostPop1995 <- nytrees_1995 %>%
+    group_by(Spc_Common) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+mostPopData1995 <- filter(nytrees_1995, Spc_Common == c("HONEYLOCUST","LONDON PLANETREE","MAPLE, NORWAY", "OAK, PIN","PEAR, CALLERY"))
+
+mostPopFinal1995 <- mostPopData1995 %>%
+    group_by(Spc_Common, Borough, Condition) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
 
 ggplot(
-  data = mostPopular,
-  mapping = aes(x = Spc_Common)
-) +
-  geom_bar()
-
+  data = mostPopFinal1995, 
+  aes(x = Condition, y = count, fill = Spc_Common)) +
+  geom_col() +
+  facet_wrap(.~Borough, scales = "free") +
+  theme_minimal() + 
+  xlab("Condition of Tree (Scale of Dead to Excellent, including Unknown)")+
+  ylab("Count of Trees") +
+  ggtitle("The Health of the Most Popular Tree Species in 1995 by Borough")+
+  labs(fill = "5 Most Popular Species")
+  
 ```
 
+```{r Most Popular and Health 2005}
 
+mostPop2005 <- nytrees_2005 %>%
+    group_by(spc_common) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+mostPopData2005 <- filter(nytrees_2005, spc_common == c("HONEYLOCUST","LONDON PLANETREE","MAPLE, NORWAY", "OAK, PIN","PEAR, CALLERY"))
+
+mostPopFinal2005 <- mostPopData2005 %>%
+    group_by(spc_common, boroname, status) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+ggplot(
+  data = mostPopFinal2005, 
+  aes(x = status, y = count, fill = spc_common)) +
+  geom_col() +
+  facet_wrap(.~boroname, scales = "free") +
+  theme_minimal() + 
+  xlab("Condition of Tree (Scale of Dead to Excellent, including Unknown)")+
+  ylab("Count of Trees") +
+  ggtitle("The Health of the Most Popular Tree Species in 2005 by Borough")+
+  labs(fill = "5 Most Popular Species")
+  
+```
+
+```{r Most Popular and Health 2015}
+
+mostPop2015 <- nytrees_2015 %>%
+    group_by(spc_common) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+mostPopData2015 <- filter(nytrees_2015, spc_common == c("Callery pear","honeylocust","London planetree", "Norway maple","pin oak"))
+
+mostPopFinal2015 <- mostPopData2015 %>%
+    group_by(spc_common, borough, health) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+ggplot(
+  data = mostPopFinal2015, 
+  aes(x = health, y = count, fill = spc_common)) +
+  geom_col() +
+  facet_wrap(.~borough, scales = "free") +
+  theme_minimal() + 
+  xlab("Condition of Tree (Scale of Dead to Excellent, including Unknown)")+
+  ylab("Count of Trees") +
+  ggtitle("The Health of the Most Popular Tree Species in 2015 by Borough")+
+  labs(fill = "5 Most Popular Species")
+  
+```
+
+```
 
 
