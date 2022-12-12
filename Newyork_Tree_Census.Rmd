@@ -53,7 +53,8 @@ To start our analysis, we wanted a visualization of the most basic indicator of 
 newyork.map <- get_map(location = 'New York', maptype= "hybrid",source='google',zoom=11)
 
 #1995
-ggmap(newyork.map) + geom_point(data = nytrees_1995, aes(x=Longitude,y=Latitude,colour = Condition),size=.05)+
+ggmap(newyork.map) + geom_point(data = nytrees_1995, 
+aes(x=Longitude,y=Latitude,colour = Condition),size=.05)+
   scale_color_manual(
     values = c(Dead = "#282626",
                Excellent = "#16DE0C",
@@ -61,8 +62,8 @@ ggmap(newyork.map) + geom_point(data = nytrees_1995, aes(x=Longitude,y=Latitude,
                Poor = "#E50E0E")
   ) +
   labs(
-    title = "Newyork Tree Cencus 1995 map"
-  ) +
+    title = "New York Tree Census 1995 map"
+  ) + xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 15L,
@@ -79,8 +80,9 @@ ggmap(newyork.map) + geom_point(data = nytrees_2005, aes(x=longitude,y=latitude,
                Poor = "#E50E0E")
   ) +
   labs(
-    title = "Newyork Tree Cencus 2005 map"
+    title = "New York Tree Census 2005 map"
   ) +
+  xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 15L,
@@ -97,9 +99,9 @@ ggmap(newyork.map) +
                Poor = "#E50E0E")  
   ) +
   labs(
-    title = "Newyork Tree Cencus 2015 map",
+    title = "New York Tree Census 2015 map",
     color = "Condition of the Tree"
-  ) +
+  ) + xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(
     plot.title = element_text(size = 15L,
@@ -128,6 +130,7 @@ ggmap(newyork.map) + geom_point(data = new_nytrees_1995_good, aes(x=Longitude,y=
     title = "Good Health",
     color = "Condition of the Tree"
   ) +
+  xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
   )
@@ -143,6 +146,7 @@ ggmap(newyork.map) + geom_point(data = new_nytrees_1995_bad, aes(x=Longitude,y=L
     title = "Bad Health", 
     color = "Condition of the Tree"
   ) +
+  xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
   )
@@ -165,6 +169,7 @@ ggmap(newyork.map) + geom_point(data = new_nytrees_2005_good, aes(x=longitude,y=
     title = "Good Health",
     color = "Condition of the Tree"
   ) +
+  xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
   )
@@ -180,6 +185,7 @@ ggmap(newyork.map) + geom_point(data = new_nytrees_2005_bad, aes(x=longitude,y=l
     title = "Bad Health", 
     color = "Condition of the Tree"
   ) +
+  xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
   )
@@ -201,6 +207,7 @@ ggmap(newyork.map) + geom_point(data = new_nytrees_2015_good, aes(x=longitude,y=
     title = "Good Health",
     color = "Condition of the Tree"
   ) +
+  xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
   )
@@ -215,6 +222,7 @@ ggmap(newyork.map) + geom_point(data = new_nytrees_2015_bad, aes(x=longitude,y=l
     title = "Bad Health", 
     color = "Condition of the Tree"
   ) +
+  xlab("Longitude") + ylab("Latitude") +
   theme_minimal() +
   theme(plot.title = element_text(face = "bold", hjust = 0.5),
   )
@@ -224,7 +232,9 @@ By 2015, the health of trees had had much improvement and the majority of trees 
 
 As we can see from this set of visualizations, from 1995 to 2015, not only has the number of trees increased in that time frame, the overall health of them has as well. Given the city-environment, I initally expected this trend to be the opposite. However, it is incredibly motivating to see how the effort put it by the Parks department, and other New York advocacy groups are paying off and providing some protection for New Yorkers against the growing climate crisis.
 
-# talk about tables
+# Trees by Borough
+
+
 
 ```{r Tables- Popularity, echo=FALSE, fig.show='hold', message=FALSE, warning=FALSE, out.width="33%"}
 ##Borough has the most tree
