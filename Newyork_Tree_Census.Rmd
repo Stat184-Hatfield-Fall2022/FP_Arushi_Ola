@@ -7,7 +7,7 @@ output:
     df_print: paged
 ---
 
-#Exploring the New York Tree Census
+# Exploring the New York Tree Census
 
 As the climate warms, there is more emphasis than ever on preserving and growing natural and natural areas. In a place like New York City, the most populated city in the United States, one would not expect this emphasis to affect change. However, New York City Parks Department, along with other private non-profit organizations have been incredibly successful in promoting the planting of new trees around the city, which benefits the community by providing greenspace and helps mitigate climate change by the increase of tree canopies. To track this change, we got datasets of the New York Tree Census, which occures every 10 years, from a website called NYCOpenData, where agencies can upload data for the public to view at their leisure. We focused on the over number/population of trees, their health, and the most popular species to track these changes.
 
@@ -234,8 +234,6 @@ As we can see from this set of visualizations, from 1995 to 2015, not only has t
 
 # Trees by Borough
 
-
-
 ```{r Tables- Popularity, echo=FALSE, fig.show='hold', message=FALSE, warning=FALSE, out.width="33%"}
 ##Borough has the most tree
 #Total Number of trees in each Borough
@@ -268,6 +266,12 @@ kbl(head(Borough_2015, 5), caption = "Total Number of Trees in each Borough - 20
   kable_paper(full_width = F)
 ```
 
+The tables above display the number of trees per borough. Although the number of trees has grown, Manhattan consistenly has the lowest tree population out of all of the boroughs. This makes sense, given that Manhattan has the smallest area out of all of the boroughs and is also the most industrialized. Manhattan has an area of 23 square miles and is home to almost 1.7 million people. Put in this context, it makes sense that it has the least number of trees. Queens consistently has had the highest tree population over the year, with Brooklyn at second place and a difference of about 10,000 trees between them each year. Queens has an area of 109 square miles, while Brooklyn has 42 square miles. They both also have about the same population, so given the difference in area, yet approximate equality in population, it makes sense why Queens is home to so many more trees than the other boroughs. 
+
+# Tree Health Per Borough
+
+To explore trees by borough more thoroughly, we decided to look at the health of trees by borough more directly. 
+
 ```{r Bar Charts- Popularity 1995, echo=FALSE, fig.width=15, message=FALSE, warning=FALSE}
 #Using Facet Visualization on the Health/Condition of the tree per borough
 ##1995
@@ -299,6 +303,8 @@ nytrees_1995 %>%
   ) +
   facet_wrap(vars(Condition), scales = "free")
 ```
+
+In 1995, we can see that Queens had the highest amount of dead trees, as well as one of the highest amounts of trees in excellent condition. Staten Island has the best proportion of trees in excellent condition to dead trees. 
 
 ```{r Bar Charts- Popularity 2005, echo=FALSE, fig.width=15, message=FALSE, warning=FALSE}
 #2005
@@ -360,6 +366,45 @@ nytrees_2015 %>%
 
 ```
 
+# Specifying Population Growth and Changes in Health by Tree Species
+
+After looking at changes in the health of the trees, we decided to subset the data and just focus on the most popular species and analyze how the species themselves and their health changes over the years. 
+
+```{r Most Popular Species Tables, echo=FALSE, fig.show='hold', message=FALSE, warning=FALSE, out.width="33%"}
+#most popular tree species
+mostPopular_1995 <- data.frame(sort(table(nytrees_1995$Spc_Common), decreasing = TRUE))
+mostPopular_2005 <- data.frame(sort(table(nytrees_2005$spc_common), decreasing = TRUE))
+mostPopular_2015 <- data.frame(sort(table(nytrees_2015$spc_common), decreasing = TRUE))
+
+
+# Use the colnames function to specify the column names
+colnames(mostPopular_1995) <- c("Tree Species", "Total Number")
+colnames(mostPopular_2005) <- c("Tree Species", "Total Number")
+colnames(mostPopular_2015) <- c("Tree Species", "Total Number")
+
+# View the resulting table 
+#1995
+kbl(head(mostPopular_1995, 5), caption = "Top 5 common tree Species in 1995" )%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+#2005
+kbl(head(mostPopular_2005, 5), caption = "Top 5 common tree Species in 2005" )%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+#2015
+kbl(head(mostPopular_2015, 5), caption = "Top 5 common tree Species in 2015" )%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+```
+* i might need to cite the websites
+From these tables, we can see that the most popular trees generally remained the same from 1995 to 2015. In 1995, we can see that the Norway Maple was the most popular species by a large margin. This, however, was problematic because Norway Maple Trees are an invasive species native to Continental Europe, Southern Norway, and Western Asia. Invasive species are any organism that are brought into a non-native environment and harm this new environment. Norway Maple Trees aid in declining biodiversity and make it harder for native species to make it to maturity. Callery Pear Trees are also invasive species, native to East Asia, specifically China. The London Planetree is a hybrid between an American Sycamore and a Non-Native tree. The Pin Oak and HoneyLocust are both species native to North America. Knowing this, it is incomprehensibly good that the invasive species are slowly becoming less popular, and the native tree species are becoming more popular. I was unable to find if this is an a focused effort on the Parks' Department part, but either way it is amazing news for the native New York species who rely on these native trees. The Norway Maple's decline in count in particularly awe-inspiring, considering it was the most popular species in 1995, and had expereinced a loss of 75,000 trees by 2015. 
+
+
+The following visualizations depict the most popular species in each borough. 
+
 ```{r Tree Popularity by Borough 1995, echo=FALSE, fig.width=25, message=FALSE, warning=FALSE}
 
 
@@ -406,6 +451,8 @@ ggplot(trees_by_borough_1995) +
   facet_wrap(vars(Borough), scales = "free")
 ```
 
+In 1995, we can see that the Maple Norway was most common in the Bronx, Queens, and Staten Island, while the London Planetree was most common in Brooklyn and the Honeylocust was most common in Manhattan. I think its also interesting how many species of Maple Trees are popular in these boroughs. Maple, Linden, and Gingko trees are all invasive species, but are considered New York City staples, especially in the fall. 
+
 ```{r Tree Popularity by Borough 2005, echo=FALSE, fig.width=25, message=FALSE, warning=FALSE}
 #2005
 species_common_2005 <- nytrees_2005 %>%
@@ -447,6 +494,8 @@ ggplot(trees_by_borough_2005) +
   ) +
   facet_wrap(vars(boroname), scales = "free")
 ```
+
+In 2005, we see that most of the most popular trees stayed the same, with the exclusion of Silver Maples in Staten Island and Queens, Sugar Maples in the Bronxand Little Leaf Lindens in Brooklyn. We can also see the increase of native species in Queens and the decrease of Norway Maples in Staten Island. 
 
 ```{r Tree Popularity by Borough 2015, echo=FALSE, fig.width=25, message=FALSE, warning=FALSE}
 #2015
@@ -490,6 +539,10 @@ ggplot(trees_by_borough_2015) +
   facet_wrap(vars(borough), scales = "free")
 ```
 
+By 2015, native species are much more common in each borough. There are some new non native species, such as the Japanese Zeikova and the Sophora Japonica, both of which are species native to Japan. These species are both invasive, but have thrived in New York City due to their ability to grow well in tight spaces. The Honeylocust or London Planetree are the most popular in each borough, which is also reflected by the overall New York City counts. 
+
+After analyzing the species by borough, we decided to look at which species are actually thriving, health wise.
+
 ```{r Tree Condition 1995, echo=FALSE, fig.width=15, message=FALSE, warning=FALSE}
 ##The most common species given the Health Condition 
 ##Creating a Bar plot Visualisation
@@ -521,6 +574,8 @@ ggplot(trees_by_condition_1995) +
   facet_wrap(vars(Condition), scales = "free")
 ```
 
+In 1995, most of the dead trees were unfortunately unknown or unidentifiable. Predictably, the trees in excellent health were mostly the Norway Maple and the Callery Pear, which makes sense givern their invasive status. However, the Norway Maple had about the same number of trees in a dead or poor health status as there were trees in excellent status, indicating its future decline. Although there were less native trees at this point, most of them were in good or excellent health. 
+
 ```{r Tree Condition 2005, echo=FALSE, fig.width=15, message=FALSE, warning=FALSE}
 #2005
 
@@ -549,6 +604,8 @@ ggplot(trees_by_condition_2005) +
   theme_minimal() +
   facet_wrap(vars(status), scales = "free")
 ```
+
+In 2005, most dead trees were still unknown species, while the most popular species in excellent health was the Callery Pear. Norway Maples were the most popular species in poor health, which makes sense as we consider its dramatic decline in population. The London Planetree was the second popular tree in excellent health and the species with the highest count of trees in good condition, which makes sense along with its small increase in population between 1995 and 2005. 
 
 ```{r Tree Condition 2015, echo=FALSE, fig.width=17, message=FALSE, warning=FALSE}
 #2015 
@@ -579,39 +636,11 @@ ggplot(trees_by_condition_2015) +
   facet_wrap(vars(health), scales = "free")
 ```
 
-```{r Most Popular Species Tables, echo=FALSE, fig.show='hold', message=FALSE, warning=FALSE, out.width="33%"}
-#most popular tree species
-mostPopular_1995 <- data.frame(sort(table(nytrees_1995$Spc_Common), decreasing = TRUE))
-mostPopular_2005 <- data.frame(sort(table(nytrees_2005$spc_common), decreasing = TRUE))
-mostPopular_2015 <- data.frame(sort(table(nytrees_2015$spc_common), decreasing = TRUE))
-
-
-# Use the colnames function to specify the column names
-colnames(mostPopular_1995) <- c("Tree Species", "Total Number")
-colnames(mostPopular_2005) <- c("Tree Species", "Total Number")
-colnames(mostPopular_2015) <- c("Tree Species", "Total Number")
-
-# View the resulting table 
-#1995
-kbl(head(mostPopular_1995, 5), caption = "Top 5 common tree Species in 1995" )%>%
-  kable_styling(bootstrap_options = "bordered")%>%
-  kable_paper(full_width = F)
-
-#2005
-kbl(head(mostPopular_2005, 5), caption = "Top 5 common tree Species in 2005" )%>%
-  kable_styling(bootstrap_options = "bordered")%>%
-  kable_paper(full_width = F)
-
-#2015
-kbl(head(mostPopular_2015, 5), caption = "Top 5 common tree Species in 2015" )%>%
-  kable_styling(bootstrap_options = "bordered")%>%
-  kable_paper(full_width = F)
-
-```
+In 2015, instead of recording Dead, Poor, Fair, and Excellent status, the census changed to recording just Poor, Fair, and Good. Because of this, it is a little difficult to direcly compare changes without making some inferences. Nevertheless, here we see that Norway Maple had the most trees in poor health, along with a lower count overall. The species with the most trees in good and fair health was the London Planetree. I was surprised to see that one of the most popular species in good health is the Japanese Zelkova. This goes to show how quickly invasive species and dominante existing thriving species.
 
 # Exploring the most Popular Species further
 
-Seeing as the most popular species haven't really changed, we decided to track those specific species health accross the years in each borough.
+Although the most popular species in each borough differs, we decided to go back to the most popular species in the city overall and track their health through the years by borough. Since the popular species overral didn't change, we were able to compare the changes easily. 
 
 ```{r Most Popular and Health 1995, echo=FALSE, fig.width=11, message=FALSE, warning=FALSE}
 
@@ -640,6 +669,8 @@ ggplot(
   
 ```
 
+In 1995, the ratio of species in good health in the Bronx and Staten Island is pretty even. However, in Brooklyn, Manhattan and Queens there is one species that is clearly in better health compared to the others. In Brooklyn, thats the London Planetree, in Manhattan its the Honeylocust, and in Queens it's the Norway Maple. The tree most relatively in poor health is the Norway Maple. 
+
 ```{r Most Popular and Health 2005, echo=FALSE, fig.width=10, message=FALSE}
 
 mostPop2005 <- nytrees_2005 %>%
@@ -666,6 +697,8 @@ ggplot(
   labs(fill = "5 Most Popular Species")
   
 ```
+
+In 2005, only Bronx has relatively even ratios of species in excellent health. In Staten Island, the Callery Pear is the healthiest tree. In Brooklyn it's the London Planetree, and in Manhattan its the Honeylocust. In Queens, the Norway Maple is the healthiest by a much smaller margin than in 1995. In Queens, the Norway Maple is also the one in the most poor health, but most of the other boroughs have less dramatic ratios of species in poor health.
 
 ```{r Most Popular and Health 2015, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE}
 
@@ -694,6 +727,8 @@ ggplot(
   
 ```
 
+By 2015, the ratios of species in fair and poor health is relatively even once again. However, the species in good health differs wildly by each borough. In Brooklyn and Queens, the London Planetree is the most popular tree in good health, while in Manhattan and the Bronx, it's the Honeylocust. In Staten Island, its the Callery Pear tree. This analysis goes to show that despite increases or decreases in species population, the trees themselves may be in poor health, which can be a predictor of a future decline in species popularity. This also applies in the opposite way, where if the ratio of trees in good or excellent health to poor health is favoring the trees is good or excellent health, there will likely be an increase in that tree species population. 
+
 ```{r Trackdown, eval=FALSE, include=FALSE}
 
 trackdown::upload_file(
@@ -714,3 +749,7 @@ file = "TrackdownDemo.Rmd"
 trackdown::render_file(
 file = "TrackdownDemo.Rmd"
 ```
+
+# Final Thoughts
+
+In conclusion, New York City has absolutely transformed in terms of tree species and health overall and by borough over the years. It's been incredibly interesting to research how different things have effected tree health and how invasive species can be incredibly detrimental to native species' health. Overall, I think the efforts put in by the city's Parks department and other advocacy groups and agencies are wildly paying off, and hopefully will end up mitigating the effects of climate change in New York City. 
