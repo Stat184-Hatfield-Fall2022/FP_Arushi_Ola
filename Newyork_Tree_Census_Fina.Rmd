@@ -1,0 +1,975 @@
+---
+title: "NYC Tree Census"
+author: "Olachi Mbakwe and Arushi Singh"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+  code_folding: "hide"
+  html_document:
+    code_folding: "hide"
+---
+
+# **Exploring the New York Tree Census**
+
+As the effects of climate change become more evident, there is growing emphasis on preserving and growing natural areas. In a city as populous as New York, it may not be obvious that these efforts can lead to significant changes. However, the New York City Parks Department and other private non-profit organizations have been successful in promoting the planting of new trees around the city. This not only provides green space for the community, improving air and water quality, reducing the urban heat island effect, and providing habitat for wildlife, but also helps to mitigate the impacts of climate change by increasing the tree canopy, which captures and stores carbon dioxide from the atmosphere. To track these changes, we obtained data sets from the New York Tree Census, which is conducted every 10 years, from the NYCOpenData website. The data includes information on the Tree species,health of the trees and as well as the location of the tree in the city. By analyzing this data, we can better understand the impact of tree-planting efforts in New York and assess their effectiveness in achieving the desired outcomes.
+
+```{r Data Wrangling, echo=FALSE, message=FALSE, warning=FALSE}
+#loading packages
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(ggmap)
+library(kableExtra)
+library(knitr)
+library(janitor)
+library(moments)
+options(tinytex.verbose = TRUE)
+
+##Bringing in the newyork tree data sets for every 10 years 
+nytrees_1995 <- read_csv("~/Desktop/1995_Street_Tree_Census.csv")
+nytrees_2005 <- read_csv("~/Desktop/2005_Street_Tree_Census.csv")
+nytrees_2015 <- read_csv("~/Desktop/2015_Street_Tree_Census_-_Tree_Data.csv")
+#nytrees_species <- read_csv("Downloads/archive/new_york_tree_species.csv")
+
+#Data wrangling
+
+nytrees_1995 <- nytrees_1995 %>%
+  select(Spc_Common,Condition,Borough,Longitude,Latitude,Zip_New)
+
+nytrees_2005 <- nytrees_2005 %>%
+  select(spc_common,status,boroname,latitude,longitude,zipcode)
+
+nytrees_2015 <- nytrees_2015 %>%
+  select(spc_common,health,borough,latitude,longitude,postcode)
+
+```
+
+### [Exploring Population Density and Growth, alongside Tree Health]{.underline}
+
+To begin our analysis, we wanted to visualize the most basic indicator of population growth over the years: the number of trees. By obtaining the data sets from the New York Tree Census, which is conducted every 10 years, we create a graph showing the total number of trees in the city over time. This provides a starting point for our analysis and allows us to see how the tree population has changed over the years. By comparing the data from different years, we can gain insights into the effectiveness of tree-planting efforts and identify potential trends or patterns. This information can be used to inform future policies and strategies for preserving and growing the city's tree population.
+
+```{r Population Density, echo=FALSE, fig.height=10, fig.width=15, message=FALSE, warning=FALSE, , fig.show='hold', out.width="100%"}
+## creating map Visualization
+##using ggmaps 
+
+newyork.map <- get_map(location = 'New York', maptype= "hybrid",source='google',zoom=11)
+
+#1995
+ggmap(newyork.map) + geom_point(data = nytrees_1995, aes(x=Longitude,y=Latitude,colour = Condition),size=.05)+
+  scale_color_manual(
+    values = c(Dead = "#282626",
+               Excellent = "#16DE0C",
+               Good = "#3D6C08",
+               Poor = "#E50E0E")
+  ) +
+  labs(
+    title = "Newyork Tree Cencus 1995 map",
+    color = "Health"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 25L,
+                              face = "bold",
+                              hjust = 0.5),
+    legend.title = element_text(size = 18),
+      legend.text = element_text(size = 15)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+  
+
+#2005
+ggmap(newyork.map) + geom_point(data = nytrees_2005, aes(x=longitude,y=latitude,colour = status),size=.05)+
+  scale_color_manual(
+    values = c(Dead = "#282626",
+               Excellent = "#16DE0C",
+               Good = "#3D6C08",
+               Poor = "#E50E0E")
+  ) +
+  labs(
+    title = "Newyork Tree Cencus 2005 Map",
+    color = "Health"
+  ) +
+  theme_minimal() +
+   theme(
+    plot.title = element_text(size = 25L,
+                              face = "bold",
+                              hjust = 0.5),
+    legend.title = element_text(size = 18),
+      legend.text = element_text(size = 15)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+
+#2015
+ggmap(newyork.map) + 
+  geom_point(data = nytrees_2015, aes(x=longitude,y=latitude,colour = health),size=.05)+
+  scale_color_manual(
+    values = c(Fair = "#16DE0C",
+               Good = "#3D6C08",
+               Poor = "#E50E0E")  
+  ) +
+  labs(
+    title = "Newyork Tree Cencus 2015 Map",
+    color = "Health"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 25L,
+                              face = "bold",
+                              hjust = 0.5),
+    legend.title = element_text(size = 18),
+      legend.text = element_text(size = 15)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+
+```
+
+The figures above show that from 1995 to 2015, the number of trees in New York City increased significantly. Upon closer examination, it becomes clear that this increase was initially driven by the expansion of the city's tree canopy, but by 2015 the trees had also become more densely populated. This dramatic increase was the result of efforts by the New York City Parks Department and Trees for Public Health to combat the effects of climate change on the city. Planting more trees is one of the most effective and cost-effective ways to do this. By increasing the city's tree canopy, New Yorkers are able to benefit from a range of positive effects. Trees help to mitigate climate change by storing CO2, reducing the amount of greenhouse gases in the atmosphere. They also help to cool neighborhoods by up to 10 degrees, reducing the need for energy-intensive air conditioning. Overall, the increase in New York City's tree population has brought numerous benefits to the city and its residents.
+
+To go further, we decided to track the health alongside the population growth.
+
+```{r Comparing Health 1995, echo=FALSE, fig.height=15, fig.show='hold', fig.width=15, message=FALSE, warning=FALSE, out.width="50%"}
+
+###Making Two separate graph for good and bad condition
+
+#1995
+#Good Conditions
+new_nytrees_1995_good <- nytrees_1995 %>% select(Longitude,Latitude,Condition) %>% filter(Condition %in% c("Good", "Excellent"))
+ggmap(newyork.map) + geom_point(data = new_nytrees_1995_good, aes(x=Longitude,y=Latitude,colour = Condition),size=.05)+
+  scale_color_manual(
+    values = c(Excellent = "#16DE0C",
+               Good = "#3D6C08")
+  ) +
+  labs(
+    title = "Good Health",
+    color = "Condition of the Tree"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 20L,face = "bold", hjust = 0.5),
+           legend.title = element_text(size = 10),
+      legend.text = element_text(size = 5)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+
+#Bad Conditions
+new_nytrees_1995_bad <- nytrees_1995%>% select(Longitude,Latitude,Condition) %>% filter(Condition %in% c("Dead", "Poor"))
+ggmap(newyork.map) + geom_point(data = new_nytrees_1995_bad, aes(x=Longitude,y=Latitude,colour = Condition),size=.05)+
+  scale_color_manual(
+    values = c(Dead = "#282626",
+               Poor = "#E50E0E")
+  ) +
+  labs(
+    title = "Bad Health", 
+    color = "Condition of the Tree"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 25L,
+                              face = "bold",
+                              hjust = 0.5),
+    legend.title = element_text(size = 18),
+      legend.text = element_text(size = 15)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+```
+
+The figures above provides a visual representation of the locations and health of the trees in the data set. By comparing the two graphs, it is clear that trees in poor or dead health tend to be located in heavily industrialized areas or in less populated areas. This suggests that these trees may not be receiving the care and attention necessary for them to thrive. In contrast, the trees in excellent and good health appear to be concentrated in parks and other areas where they have been intentionally planted.
+
+```{r Comparing Health 2005, echo=FALSE, fig.height=15, fig.show='hold', fig.width=15, message=FALSE, warning=FALSE, out.width="50%"}
+
+
+#2005
+#Good Conditions
+new_nytrees_2005_good <- nytrees_2005%>% select(longitude,latitude,status) %>% filter(status %in% c("Good", "Excellent"))
+ggmap(newyork.map) + geom_point(data = new_nytrees_2005_good, aes(x=longitude,y=latitude,colour = status),size=.05)+
+  scale_color_manual(
+    values = c(Excellent = "#16DE0C",
+               Good = "#3D6C08")
+  ) +
+  labs(
+    title = "Good Health",
+    color = "Condition of the Tree"
+  ) +
+  theme_minimal() +
+   theme(
+    plot.title = element_text(size = 25L,
+                              face = "bold",
+                              hjust = 0.5),
+    legend.title = element_text(size = 18),
+      legend.text = element_text(size = 15)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+
+#Bad Conditions
+new_nytrees_2005_bad <- nytrees_2005%>% select(longitude,latitude,status) %>% filter(status %in% c("Dead", "Poor"))
+ggmap(newyork.map) + geom_point(data = new_nytrees_2005_bad, aes(x=longitude,y=latitude,colour = status),size=.05)+
+  scale_color_manual(
+    values = c(Dead = "#282626",
+               Poor = "#E50E0E")
+  ) +
+  labs(
+    title = "Bad Health", 
+    color = "Condition of the Tree"
+  ) +
+  theme_minimal() +
+ theme(
+    plot.title = element_text(size = 25L,
+                              face = "bold",
+                              hjust = 0.5),
+    legend.title = element_text(size = 18),
+      legend.text = element_text(size = 15)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+```
+
+The figure above shows the health status of trees in New York City in 2005. While the number of trees had increased, a significant proportion of them were in poor health or had already died. This suggests that proper care and maintenance of trees in the city was lacking at the time. However, there is some positive news as well. The ratio of trees in excellent to good health appears to have improved compared to the previous year. In conclusion, the Parks department still had work to do to improve the overall health of the city's tree population in 2005.
+
+
+```{r Comparing Health 2015, echo=FALSE, fig.height=15, fig.show='hold', fig.width=15, message=FALSE, warning=FALSE, out.width="50%"}
+
+#2015
+#Good Conditions
+new_nytrees_2015_good <- nytrees_2015 %>% select(longitude,latitude,health) %>% filter(health %in% c("Good", "Fair"))
+ggmap(newyork.map) + geom_point(data = new_nytrees_2015_good, aes(x=longitude,y=latitude,colour = health),size=.05)+
+  scale_color_manual(
+    values = c(Good = "#3D6C08",
+               Fair = "#16DE0C")
+  ) +
+  labs(
+    title = "Good Health",
+    color = "Condition of the Tree"
+ ) +
+  theme_minimal() +
+   theme(plot.title = element_text(size = 20L,face = "bold", hjust = 0.5),
+           legend.title = element_text(size = 10),
+      legend.text = element_text(size = 5)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+
+#Bad Conditions
+new_nytrees_2015_bad <- nytrees_2015 %>% select(longitude,latitude,health) %>% filter(health %in% c("Poor"))
+ggmap(newyork.map) + geom_point(data = new_nytrees_2015_bad, aes(x=longitude,y=latitude,colour = health),size=.05)+
+  scale_color_manual(
+    values = c(Poor = "#E50E0E")
+  ) +
+  labs(
+    title = "Bad Health", 
+    color = "Condition of the Tree"
+  ) +
+  theme_minimal() +
+   theme(plot.title = element_text(size = 20L,face = "bold", hjust = 0.5),
+           legend.title = element_text(size = 10),
+      legend.text = element_text(size = 5)
+  )+guides(colour = guide_legend(override.aes = list(size = 10)))
+```
+
+In 2015, the health of trees in New York City had greatly improved compared to previous years. The majority of trees were in good health, with a significant decrease in the ratio of poor to good trees. The growth in the tree population, coupled with the improvement in their health, has provided numerous benefits to the city.
+
+The figures above show that over the course of two decades, from 1995 to 2015, the number of trees in New York City has increased significantly.Initially, this growth was mostly in the form of new tree plantings, but by 2015, the existing tree population had also improved in health. This is a positive development, as more trees provide numerous benefits for the community, such as providing green space, reducing air pollution, and mitigating the effects of climate change. This is a testament to the efforts of the New York City Parks Department and other organizations that have been working to promote the planting of new trees and maintain the health of existing ones. The growing tree population and improved tree health provide a hopeful sign that these efforts are making a positive impact on the city. Overall, the growth in the number and health of trees in New York is a promising sign of progress in the fight against climate change.
+
+
+To gain a deeper understanding of the tree species population data, we will utilize both data visualizations and as well as descriptive statistics. Table 1 presents the values of various descriptive statistics for tree species populations in 1995, 2005, and 2015. It is evident from the table that there was a significant decline in the number of tree species over the 20-year period, with 276 species in 1995, 169 in 2005, and 133 in 2015. This decline may be due to a variety of factors, such as deforestation and urbanization. By using both data visualizations and descriptive statistics, we can gain a more comprehensive view of the tree species population and identify potential reasons for the observed decline.
+
+```{r Summary Tables, echo=FALSE}
+
+Species_1995 <- nytrees_1995 %>%
+  select(Spc_Common)%>%
+  group_by(Spc_Common) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>%
+  ungroup()
+
+
+Species_2005 <- nytrees_2005 %>%
+  select(spc_common)%>%
+  group_by(spc_common) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>%
+  ungroup()
+
+
+
+Species_2015 <- nytrees_2015 %>%
+  select(spc_common)%>%
+  group_by(spc_common) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>%
+  ungroup()
+
+##Summary table tree summary table 
+
+##1995
+summary_table_1995 <- Species_1995 %>%
+  summarize(
+    across(
+      .cols = where(is.numeric),
+      .fns = list(
+        MIN = ~min(count, na.rm = TRUE),
+        Q1 = ~quantile(count, probs = 0.25, na.rm = TRUE),
+        Median = ~median(count, na.rm = TRUE),
+        Q3 = ~quantile(count, probs = 0.75, na.rm = TRUE),
+        Max = ~max(count, na.rm = TRUE),
+        MAD = ~mad(count, na.rm = TRUE),
+        SAM = ~mean(count, na.rm = TRUE),
+        SASD = ~sd(count, na.rm = TRUE),
+        Skew = ~skewness(count, na.rm = TRUE),
+        ExKurt = ~kurtosis(count, na.rm = TRUE)
+      )
+    ),
+    count = n()
+  ) %>%
+  mutate(year = "1995")
+
+#2005
+summary_table_2005 <- Species_2005 %>%
+  summarize(
+    across(
+      .cols = where(is.numeric),
+      .fns = list(
+        MIN = ~min(count, na.rm = TRUE),
+        Q1 = ~quantile(count, probs = 0.25, na.rm = TRUE),
+        Median = ~median(count, na.rm = TRUE),
+        Q3 = ~quantile(count, probs = 0.75, na.rm = TRUE),
+        Max = ~max(count, na.rm = TRUE),
+        MAD = ~mad(count, na.rm = TRUE),
+        SAM = ~mean(count, na.rm = TRUE),
+        SASD = ~sd(count, na.rm = TRUE),
+        Skew = ~skewness(count, na.rm = TRUE),
+        ExKurt = ~kurtosis(count, na.rm = TRUE)
+      )
+    ),
+    count = n()
+  )%>%
+  mutate(year = "2005")
+
+#2015
+summary_table_2015 <- Species_2015 %>%
+  summarize(
+    across(
+      .cols = where(is.numeric),
+      .fns = list(
+        MIN = ~min(count, na.rm = TRUE),
+        Q1 = ~quantile(count, probs = 0.25, na.rm = TRUE),
+        Median = ~median(count, na.rm = TRUE),
+        Q3 = ~quantile(count, probs = 0.75, na.rm = TRUE),
+        Max = ~max(count, na.rm = TRUE),
+        MAD = ~mad(count, na.rm = TRUE),
+        SAM = ~mean(count, na.rm = TRUE),
+        SASD = ~sd(count, na.rm = TRUE),
+        Skew = ~skewness(count, na.rm = TRUE),
+        ExKurt = ~kurtosis(count, na.rm = TRUE)
+      )
+    ),
+    count = n()
+  )%>%
+  mutate(year = "2015")
+
+
+summary_table <- bind_rows(summary_table_1995, summary_table_2005, summary_table_2015)
+
+# Use the colnames function to specify the column names
+colnames(summary_table) <- c("Min", "Q1",'Median',"Q3","Max","MAD","SAM","SASD","Sample Skew","Sample Ex. Kurtosis","n","Year")
+
+Summary_table <- summary_table %>% select("Year","n","Min", "Q1",'Median',"Q3","Max","MAD","SAM","SASD","Sample Skew","Sample Ex. Kurtosis")
+
+kbl(Summary_table[1:3, 1:12],caption = "<center><strong>Table 1: Summary Statistics for Tree Species each Year</strong></center>") %>%
+  kable_styling(fixed_thead = T) %>%
+  row_spec(0,bold = TRUE) %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+
+```
+
+
+The sample minimum, which indicates the lowest number of an individuals tree species, was 1 in both 1995 and 2005. This suggests that each tree species grown was at least one until 2015, when the minimum number per species increased to 10.And on the other end of the spectrum, the sample maximum, which represents the highest number of an individual tree species, has decreased over the years, from 109321 in 1995 to 89529 in 2005 and 87014 in 2015. This indicates that some tree species have experienced significant declines in their population sizes over the 20-year period. By examining the sample minimum and maximum, we can gain insight into the overall health and viability of tree species populations.
+
+The first quartile (Q1) indicates the cutoff for the lowest 25% of the data. This measure can provide insight into the distribution of tree species populations. For example, in 1995, approximately 69 tree species had a population of less than 3 individual trees per species. In 2005, approximately 42 tree species had a population of less than 9 individual trees per species, and in 2015, about 33 tree species had a population of less than 181 individual trees per species. These values suggest that there is a significant variation in the populations of different tree species, with some species having relatively small populations and others having larger populations. By examining Q1, we can see that as the number of tree species planted decreases, it is likely that more individuals of the remaining tree species are planted. This may indicate a shift in the types of tree species being planted or a focus on increasing the populations of certain species.The third quartile (Q3) is a measure that indicates the cutoff for the highest 25% of the data. It provides insight into the distribution of tree species populations and can be used to identify potential areas of concern. For example, in 1995, approximately 69 tree species had a population of more than 68 individual trees per species. In 2005, approximately 42 tree species had a population of more than 903 individual trees per species, and in 2015, about 33 tree species had a population of more than 2844 individual trees per species. These values suggest that there is significant variation in the populations of different tree species, with some species having relatively large populations and others having smaller populations. By examining Q3, we can gain a better understanding of the distribution of tree species populations and identify potential trends or patterns.
+
+The sample median provides a measure of the center of the tree species population data. It indicates the tree species population value at which half of the tree species have less than this value and half have at least this value. In 1995, the median was 10, in 2005 it was 63, and in 2015 it was 607. This shows a significant increase in the median tree species population over the 20-year period. However, the sample median only tells part of the story, as not all tree species are the same and there is likely to be significant variation in their populations. To account for this variation, we can use the median absolute deviation (MAD), which indicates the number of tree species within a certain distance of the sample median. For example, in 1995, half of the tree species had populations within 13 trees per species of the median value of 10. In 2005, half of the tree species had populations within 92 trees per species of the median value of 63, and in 2015, half of the tree species had populations within 777 trees per species of the median value of 607.
+
+In addition to the sample median, we can use the sample arithmetic mean (SAM) to measure and estimate the average amount of trees planted per species. The SAM values for 1995, 2005, and 2015 were 1873 tree/species, 3505 tree/species, and 5141 tree/species, respectively. This indicates that the average number of trees planted per species increased significantly over the 20-year period. By examining the SAM, we can gain a better understanding of the average population size of tree species and identify potential trends or patterns in the data. Additionally, we can use the SAM to estimate the total number of trees planted for a given collection of tree species, as most species are likely to have populations of at least 1500 plus trees.
+
+The sample standard deviation (SASD) is a measure of the spread or variability of the tree species population data. It can provide insight into where the accumulation of trees picks up and slows down over time. In 1995, the SASD was 9569.546, in 2005 it was 11868, and in 2015 it was 12823.214. These values suggest that the tree species population data is relatively spread out or variable, with some species having relatively large populations and others having smaller populations. By examining the SASD, we can gain a better understanding of the distribution of tree species populations and identify potential areas of concern. For example, a high SASD value may indicate that certain tree species are declining in population, while a low SASD value may indicate that the populations of most tree species are stable or increasing.
+
+The last two statistics in Table 1 are sample skewness and sample excess kurtosis. These measures provide additional information about the underlying population of tree species. The positive values of sample skewness indicate that the tree species populations are skewed, which means that some tree species have more trees planted than is typical. For example, in 1995 there were approximately 8 tree species with more trees planted than typical, in 2005 there were 5 such species, and in 2015 there were 4. This suggests that some tree species have larger populations than others, which can impact the overall health and viability of the tree species population. By examining sample skewness, we can gain a better understanding of the distribution of tree species populations.
+
+For sample excess kurtosis, the positive value indicates that the tree species populations have more outliers than would be expected if the populations followed a normal distribution. This suggests that some tree species have very large or very small populations.
+
+#### [Specifying Population Growth and Changes in Health by Tree Species]{.underline}
+
+After looking at the summary table of tree species, we decided to subset the data and just focus on the most popular species and analyze how the species themselves and their health changes over the years.
+
+After reviewing the summary table of tree species, we decided to narrow our focus and consider the most common species in our analysis. This will allowed us to better understand how the health and abundance of these species changed over the years. By sub-setting the data in this way, we were able to gain a more detailed and nuanced understanding of the tree population in the city.
+
+```{r Most Popular Species Tables, echo=FALSE, fig.show='hold', message=FALSE, warning=FALSE}
+#most popular tree species
+mostPopular_1995 <- data.frame(sort(table(nytrees_1995$Spc_Common), decreasing = TRUE))
+mostPopular_2005 <- data.frame(sort(table(nytrees_2005$spc_common), decreasing = TRUE))
+mostPopular_2015 <- data.frame(sort(table(nytrees_2015$spc_common), decreasing = TRUE))
+
+
+# Use the colnames function to specify the column names
+colnames(mostPopular_1995) <- c("Tree Species", "Total Number")
+colnames(mostPopular_2005) <- c("Tree Species", "Total Number")
+colnames(mostPopular_2015) <- c("Tree Species", "Total Number")
+
+# View the resulting table 
+#1995
+kbl(head(mostPopular_1995, 5), caption = "Top 5 common tree Species in 1995" )%>%
+  kable_styling(bootstrap_options = "bordered" )%>%
+  kable_paper(full_width = F)
+
+
+#2005
+kbl(head(mostPopular_2005, 5), caption = "Top 5 common tree Species in 2005" )%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+
+#2015
+kbl(head(mostPopular_2015, 5), caption = "Top 5 common tree Species in 2015" )%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+
+
+```
+
+From the tables above, we can see the top five tree species in each year and how many times they were planted. We can see that the Maple,Norway species went from being the most commonly planted trees in 1995 to being among the least commonly planted in 2015. In contrast, the Honeylocust species increased in popularity, going from being the second-to-last most commonly planted tree species in 1995 to the second-most commonly planted in 2015. Overall, the data shows that the London Plantree is the most commonly planted tree species in New York City as of 2015.
+
+We can infer from the data that there has been a shift in the popularity of different tree species over time.Now we want to find out why. It is difficult to say exactly why this has happened without further information. For example, some tree species may be declining in popularity due to pests or diseases that affect their health, while others may be increasing in popularity because they are better suited to the local climate or have fewer pest or disease issues. Additionally, changes in the preferences of city residents and city planners could also play a role in the popularity of different tree species.
+
+The barplot below shows the health condition of different tree species over time. This information can help us understand whether the health of a tree species has influenced its popularity. For example, if a tree species has a high proportion of trees in poor health, it may be less popular among city residents and city planners. On the other hand, if a tree species has a high proportion of trees in excellent health, it may be more popular and widely planted. By comparing the health of tree species to their popularity, we can gain insights into the factors that influence the popularity of tree species in New York City.
+
+```{r Tree Condition 1995, echo=FALSE, fig.height=10, fig.width=20, message=FALSE, warning=FALSE}
+##The most common species given the Health Condition 
+##Creating a Bar plot Visualisation
+#1995
+
+Nytrees_1995 <- nytrees_1995 %>%
+  select(Spc_Common, Condition)%>%
+  group_by(Spc_Common, Condition) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+trees_by_condition_1995 <- bind_rows(
+  head(filter(Nytrees_1995, Condition == "Excellent"),5),
+  head(filter(Nytrees_1995, Condition == "Good"),5),
+  head(filter(Nytrees_1995, Condition == "Poor"),5),
+  head(filter(Nytrees_1995, Condition == "Dead"),5)
+)
+
+##Visualization 
+ggplot(trees_by_condition_1995) +
+  aes(x = Spc_Common, y = count) +
+  geom_col(fill = "#053E05") +
+  labs(
+    x = "Tree Species ",
+    y = "Count",
+    title = "Top Five Tree Species given their Health Condition - 1995"
+  ) +
+  theme_minimal() +
+      theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17),
+    axis.title.x = element_text(size = 17,vjust = -.50),
+     axis.text = element_text(size = 13),
+    axis.title = element_text(size = 20)
+  )+
+  facet_wrap(vars(Condition), scales = "free")
+```
+
+In 1995, the majority of dead trees were unfortunately unknown or unidentifiable. Among the identifiable tree species, the Norway Maple had the highest number of trees in excellent health, with the London Planetree and Pear,Callery being close in terms of the number of trees in excellent condition. This is likely due to their invasive status, which allows them to spread quickly and thrive in a variety of environments. However, the Norway Maple also had a high number of trees in poor condition and the second-highest number of dead trees. In contrast, the London Planetree had the highest number of trees in good condition. This difference in health between the two species may explain why the Norway Maple declined in popularity in the following years and why the London Planetree became more popular. The superior health of the London Planetree likely made it a more attractive option for city residents and city planners, leading to its increased popularity over time.
+
+```{r Tree Condition 2005, echo=FALSE, fig.height=10, fig.width=20, message=FALSE, warning=FALSE}
+#2005
+#Wrangling
+Nytrees_2005 <- nytrees_2005 %>%
+  select(spc_common, status)%>%
+  group_by(spc_common, status) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+#binding rows
+trees_by_condition_2005 <- bind_rows(
+  head(filter(Nytrees_2005, status == "Excellent"),5),
+  head(filter(Nytrees_2005, status == "Good"),5),
+  head(filter(Nytrees_2005, status == "Poor"),5),
+  head(filter(Nytrees_2005, status == "Dead"),5)
+)
+
+##Visualization
+ggplot(trees_by_condition_2005) +
+  aes(x = spc_common, y = count) +
+  geom_col(fill = "#053E05") +
+  labs(
+    x = "Tree Species ",
+    y = "Count",
+    title = "Top Five Tree Species given their Health Condition - 2005"
+  ) +
+  theme_minimal() +
+      theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17),
+    axis.title.x = element_text(size = 17,vjust = -.5),
+     axis.text = element_text(size = 13),
+    axis.title = element_text(size = 20)
+  )+
+  facet_wrap(vars(status), scales = "free")
+```
+
+In 2005, the majority of dead trees were still unidentified species, but the Norway Maple was the second-most common among the identified species. The Callery Pear was the most popular tree species in excellent health, with the London Planetree coming in a close second. The Norway Maple was the most popular tree species in poor health, while the London Planetree had the highest number of trees in good condition. As we saw in the data from 1995, the London Planetree and Callery Pear had consistently high numbers of trees in good condition, which may explain why they became more popular over time. In particular, the Callery Pear went from being the least commonly planted tree species among the top five in 1995 to the third-most commonly planted in 2005.
+
+```{r Tree Condition 2015, echo=FALSE, fig.height=6, fig.width=14, message=FALSE, warning=FALSE}
+#2015 
+
+Nytrees_2015 <- nytrees_2015 %>%
+  select(spc_common, health)%>%
+  group_by(spc_common, health) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+trees_by_condition_2015 <- bind_rows(
+  head(filter(Nytrees_2015, health == "Excellent"),5),
+  head(filter(Nytrees_2015, health == "Good"),5),
+  head(filter(Nytrees_2015, health == "Fair"),5),
+  head(filter(Nytrees_2015, health == "Poor"),5)
+)
+
+##Visualization 
+ggplot(trees_by_condition_2015) +
+  aes(x = spc_common, y = count) +
+  geom_col(fill = "#053E05") +
+  labs(
+    x = "Tree Species ",
+    y = "Count",
+    title = "Top Five Tree Species given their Health Condition - 2015"
+  ) +
+  theme_minimal() +
+    theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17),
+    axis.title.x = element_text(size = 17,vjust = -.5),
+     axis.text = element_text(size = 14),
+    axis.title = element_text(size = 20)
+  )
+  facet_wrap(vars(health), scales = "free")
+```
+
+In 2015, the census changed the way it recorded the health of tree species, replacing the categories of dead, poor, good and excellent with just poor, fair, and good. This makes it difficult to directly compare changes in tree health over time without making some inferences. Nevertheless, the data shows that the Norway Maple had the most trees in poor health and was not represented in the fair or good condition barplots, indicating that it has only declined in health over time. The London Planetree had the highest number of trees in both good and fair health, with the Honeylocust coming in second for both categories.
+
+Overall, it appears that the health of a tree species plays a significant role in its popularity and the number of trees of that species planted in the city. Tree species with consistently high numbers of trees in good health, such as the London Planetree and Honeylocust, have become more popular over time, while tree species with high numbers of trees in poor health, such as the Norway Maple, have declined in popularity. I was also surprised to see that the Japanese Zelkova, an invasive species, was one of the most popular tree species in good health. This goes to show how quickly invasive species can thrive and become dominant in a new environment.
+
+#### [Tree Health in each Borough]{.underline}
+
+```{r Tables- Popularity, echo=FALSE, fig.show='hold', message=FALSE, warning=FALSE, out.width="33%"}
+
+##Borough has the most tree
+#Total Number of trees in each Borough
+
+Borough_1995 <- data.frame(sort(table(nytrees_1995$Borough), decreasing = TRUE))
+Borough_2005 <- data.frame(sort(table(nytrees_2005$boroname), decreasing = TRUE))
+Borough_2015 <- data.frame(sort(table(nytrees_2015$borough), decreasing = TRUE))
+
+
+# Use the colnames function to specify the column names
+colnames(Borough_1995) <- c("Borough", "Total Number of Trees")
+colnames(Borough_2005) <- c("Borough", "Total Number of Trees")
+colnames(Borough_2015) <- c("Borough", "Total Number of Trees")
+
+#1995
+kbl(head(Borough_1995, 5), caption = "Total Number of Trees in each Borough - 1995")%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+
+#2005
+kbl(head(Borough_2005, 5), caption = "Total Number of Trees in each Borough - 2005")%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+
+#2015
+kbl(head(Borough_2015, 5), caption = "Total Number of Trees in each Borough - 2015")%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+
+
+
+```
+
+The tables above display the number of trees per borough in New York City. While the overall number of trees in the city has increased over the years, Manhattan consistently has the lowest tree population of all the boroughs. This is likely because Manhattan is the smallest borough in terms of area and is also the most densely populated and industrialized. With an area of only 23 square miles and a population of almost 1.7 million people, it is no surprise that Manhattan has the least number of trees. On the other hand, Queens consistently has the highest tree population among the boroughs, with Brooklyn coming in second place with a difference of approximately 10,000 trees between them each year. Queens has a larger area of 109 square miles compared to Brooklyn's 42 square miles, and both have similar populations, so it makes sense that Queens would have more trees.
+
+These statistics provide valuable insight into the distribution of trees in New York City and highlight the differences between the boroughs in terms of population, area, and number of trees. By examining these statistics, we can identify potential areas of concern, such as the low tree population in Manhattan, and take steps to address them. For example, the city could prioritize planting more trees in Manhattan to increase its tree population and improve the overall health and well-being of the borough. Additionally, by comparing the statistics across the boroughs, we can gain a better understanding of the factors that influence the number of trees in a given area and use that knowledge to inform future planting efforts.
+
+To explore trees by borough more thoroughly, we decided to look at the health of trees by borough more directly.
+
+```{r Bar Charts- Popularity 1995, echo=FALSE, fig.height=10, fig.width=15, message=FALSE, warning=FALSE}
+#Using Facet Visualization on the Health/Condition of the tree per borough
+##1995
+nytrees_1995 %>%
+  filter(Condition %in% c("Good", "Excellent", "Poor", "Dead")) %>%
+  ggplot() +
+  aes(x = Borough, fill = Borough) +
+  geom_bar() +
+  scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               `Staten Island` = "#4B935B")
+  ) +
+  labs(
+    x = "Borough",
+    y = "Total num of Tree",
+    title = "1995 Trees Condition per Borough",
+    fill = "Boroughs"
+  ) +
+  theme_minimal() +
+   theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17,face = "bold"),
+    axis.title.x = element_text(size = 17,face = "bold"),
+     axis.text = element_text(size = 12),
+    axis.title = element_text(size = 20),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 18),
+    legend.key.size = unit(1,"cm")
+  ) +
+  facet_wrap(vars(Condition), scales = "free")
+```
+
+In 1995, Queens had the highest number of dead trees among the boroughs, as well as one of the highest amounts of trees with excellent condition alongside Staten Island. Despite having a lower population of trees overall compared to Brooklyn, Staten Island had a higher proportion of trees rated as excellent. In terms of the ratio of trees in excellent condition to dead trees, Staten Island had the best score among the boroughs.
+
+```{r Bar Charts- Popularity 2005, echo=FALSE, fig.height=10, fig.width=15, message=FALSE, warning=FALSE}
+#2005
+ggplot(nytrees_2005) +
+  aes(x = boroname, fill = boroname) +
+  geom_bar() +
+  scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               "5" = "#4B935B")
+  ) +
+  labs(
+    x = "Borough",
+    y = "Total num of Tree",
+    title = "2005 Trees Condition per Borough",
+    fill = "Boroughs"
+  ) +
+  theme_minimal() +
+   theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17,face = "bold"),
+    axis.title.x = element_text(size = 17,face = "bold"),
+     axis.text = element_text(size = 12),
+    axis.title = element_text(size = 20),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 18),
+    legend.key.size = unit(1,"cm")
+  )+
+  facet_wrap(vars(status), scales = "free")
+```
+
+In 2005, the data indicated that Queens continued to have the highest number of trees in all conditions. However, Staten Island experienced a decline in the condition of its trees, with a noticeable decrease in the number of trees rated as excellent. In contrast, the Bronx, Staten Island, and Brooklyn had relatively stable numbers of dead trees, suggesting a consistent situation in those boroughs. Overall, the data showed a similar pattern to the previous year, with some minor variations.
+
+```{r Bar Charts- Popularity 2015, echo=FALSE, fig.height=7, fig.width=17, message=FALSE, warning=FALSE}
+#2015
+nytrees_2015 %>%
+  filter(health %in% c("Good", "Fair", "Poor")) %>%
+  ggplot() +
+  aes(x = borough, fill = borough) +
+  geom_bar() +
+  scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               `Staten Island` = "#4B935B")
+  ) +
+  labs(
+    x = "Borough",
+    y = "Total num of Tree",
+    title = "2015 Trees Condition per Borough",
+    fill = "Boroughs"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17,face = "bold"),
+    axis.title.x = element_text(size = 17,face = "bold"),
+     axis.text = element_text(size = 13),
+    axis.title = element_text(size = 20),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 18),
+    legend.key.size = unit(1,"cm")
+  )+
+  facet_wrap(vars(health), scales = "free")
+
+
+```
+
+In 2015, the data showed a similar trend to the previous two decades.However, the differences between the boroughs in terms of the number of trees experiencing a specific condition became more pronounced. For example, the gap between the number of dead trees in Queens and the number of dead trees in the Bronx, Staten Island, and Brooklyn increased. This suggests that the condition of trees in the boroughs was becoming more varied over time.
+
+#### [Visualizing using Bar plot on the most common species per borough]{.underline}
+
+In this analysis, we will focus on exploring which tree species are the most popular in each borough of New York City. By looking at the data in this way, we can gain insights into the preferences of city residents and city planners in each borough and how they have changed over time. Additionally, we can see how the popularity of tree species varies across the different boroughs and what factors may influence these differences.
+
+```{r Tree Popularity by Borough 1995, echo=FALSE, fig.height=15, fig.width=25, message=FALSE, warning=FALSE}
+
+#1995
+#wrangling
+species_common_1995 <- nytrees_1995 %>%
+  select(Spc_Common, Borough)%>%
+  group_by(Spc_Common, Borough) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+##Bindind row
+#creating new data set
+#top 5
+trees_by_borough_1995 <- bind_rows(
+  head(filter(species_common_1995, Borough == "Staten Island"),5),
+  head(filter(species_common_1995, Borough == "Queens"),5),
+  head(filter(species_common_1995, Borough == "Manhattan"),5),
+  head(filter(species_common_1995, Borough == "Brooklyn"),5),
+  head(filter(species_common_1995, Borough == "Bronx"),5)
+)
+
+ggplot(trees_by_borough_1995) +
+  aes(x = Spc_Common, y = count, fill = Borough) +
+  geom_col()+
+    scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               `Staten Island` = "#4B935B")
+  ) +
+  labs(
+    x = "Tree Species",
+    y = "Count",
+    title = "Top Five Most Common Species per Borough - 1995",
+       fill = "Boroughs"
+  ) +
+  theme_minimal() +
+ theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17,face = "bold"),
+    axis.title.x = element_text(size = 17,face = "bold"),
+     axis.text = element_text(size = 10),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 20),
+    legend.key.size = unit(1.25,"cm")
+    ) +
+  facet_wrap(vars(Borough), scales = "free")
+```
+
+In 1995, the data showed that the Bronx, Staten Island, and Queens all had the same tree species with the highest populations: the Maple,Norway species. In contrast, Manhattan had a higher number of Honeylocust trees, while Brooklyn had a higher number of London Planetree trees. This suggests that the popularity of tree species varied across the different boroughs, with each borough having its own unique preferences. It is not clear from the data alone what factors may have influenced these differences, but they could be related to the local climate, soil conditions, or other factors.It is interesting to note that many of the popular tree species in these boroughs, such as Maple, Linden, and Gingko, are invasive species, but they are still considered New York City staples, particularly in the fall.
+
+```{r Tree Popularity by Borough 2005, echo=FALSE, fig.height=15, fig.width=25}
+
+#2005
+species_common_2005 <- nytrees_2005 %>%
+  select(spc_common, boroname)%>%
+  group_by(spc_common, boroname) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+trees_by_borough_2005 <- bind_rows(
+  head(filter(species_common_2005, boroname == "5"),5),
+  head(filter(species_common_2005, boroname == "Queens"),5),
+  head(filter(species_common_2005, boroname == "Manhattan"),5),
+  head(filter(species_common_2005, boroname == "Brooklyn"),5),
+  head(filter(species_common_2005, boroname == "Bronx"),5)
+)
+
+ggplot(trees_by_borough_2005) +
+  aes(x = spc_common, y = count, fill = boroname) +
+  geom_col() +
+  scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               "5" = "#4B935B")
+  ) +
+  labs(
+    x = "Tree Species",
+    y = "Count",
+    title = "Top Five Most Common Species per Borough - 2005",
+       fill = "Boroughs"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17,face = "bold"),
+    axis.title.x = element_text(size = 17,face = "bold"),
+     axis.text = element_text(size = 10),
+    axis.title = element_text(size = 20),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 20),
+    legend.key.size = unit(1.25,"cm")
+    ) +
+  facet_wrap(vars(boroname), scales = "free")
+```
+
+In 2005, it appears that Staten Island primarily planted Pear,Callery trees, while Honeylocust trees were mostly found in the Bronx and Manhattan. In Brooklyn, London Planetree trees were the most common, and Maple Norway trees were primarily planted in Queens.Since 2005, we have observed an increase in the planting of native tree species in Queens, and a decrease in the planting of Norway Maples, particularly in Staten Island.
+
+```{r Tree Popularity by Borough 2015, echo=FALSE, fig.height=15, fig.width=25, message=FALSE, warning=FALSE}
+#2015
+species_common_2015 <- nytrees_2015 %>%
+  select(spc_common, borough)%>%
+  group_by(spc_common, borough) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+trees_by_borough_2015 <- bind_rows(
+  head(filter(species_common_2015, borough == "Staten Island"),5),
+  head(filter(species_common_2015, borough == "Queens"),5),
+  head(filter(species_common_2015, borough == "Manhattan"),5),
+  head(filter(species_common_2015, borough == "Brooklyn"),5),
+  head(filter(species_common_2015, borough == "Bronx"),5)
+)
+
+ggplot(trees_by_borough_2015) +
+  aes(x = spc_common, y = count, fill = borough) +
+  geom_col() +
+  scale_fill_manual(
+    values = c(Bronx = "#814198",
+               Brooklyn = "#0370B7",
+               Manhattan = "#E59C0C",
+               Queens = "#E01D1D",
+               `Staten Island` = "#4B935B")
+  ) +
+  labs(
+    x = "Tree Species",
+    y = "Count",
+    title = "Top Five Most Common Species per Borough - 2015",
+       fill = "Boroughs"
+    
+  ) +
+  theme_minimal() +
+ theme(
+    plot.title = element_text(size = 20L,
+                              face = "bold",
+                              hjust = 0.5),
+    axis.title.y = element_text(size = 17,face = "bold"),
+    axis.title.x = element_text(size = 17,face = "bold"),
+     axis.text = element_text(size = 11.5),
+    axis.title = element_text(size = 20),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(size = 20),
+    legend.key.size = unit(1.25,"cm")
+    ) +
+  facet_wrap(vars(borough), scales = "free")
+```
+
+In 2015, data showed that Honeylocust trees were the most popular in the Bronx and Manhattan, while London Planetree trees were the most popular in Brooklyn and Queens. In Staten Island, Pear,Callery trees were the most commonly planted. Norway Maples were no longer among the top five most popular trees in any borough, except for in Queens where it was the fourth most popular tree. Native tree species were much more common in each borough compared to non-native species. Some new non-native species, such as the Japanese Zeikova and the Sophora Japonica, were introduced and have thrived in New York City due to their ability to grow well in tight spaces. Overall, the Honeylocust and London Planetree remained the most popular tree species in each borough, and this was reflected in the overall counts for most popular species in New York City.
+
+#### [Exploring the Most Popular Species Further]{.underline}
+
+Even though the most popular tree species in each borough differs over each year, the overall popularity of tree species in New York City has remained relatively consistent. This allowed us to track the health of the most popular tree species over time by borough. By comparing the health of the most popular tree species in each borough, we can gain insights into how their health has changed and whether this has influenced their popularity.
+
+```{r Most Popular and Health 1995, echo=FALSE, fig.height=10, fig.width=11, message=FALSE, warning=FALSE}
+
+mostPop1995 <- nytrees_1995 %>%
+    group_by(Spc_Common) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+mostPopData1995 <- filter(nytrees_1995, Spc_Common == c("HONEYLOCUST","LONDON PLANETREE","MAPLE, NORWAY", "OAK, PIN","PEAR, CALLERY"))
+
+mostPopFinal1995 <- mostPopData1995 %>%
+    group_by(Spc_Common, Borough, Condition) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+ggplot(
+  data = mostPopFinal1995, 
+  aes(x = Condition, y = count, fill = Spc_Common)) +
+  geom_col() +
+  facet_wrap(.~Borough, scales = "free") +
+  theme_minimal() + 
+  xlab("Condition of Tree (Scale of Dead to Excellent, including Unknown)")+
+  ylab("Count of Trees") +
+  ggtitle("The Health of the Most Popular Tree Species in 1995 by Borough")+
+  labs(fill = "5 Most Popular Species")
+  
+```
+
+In 1995, the data showed that the ratio of tree species in good health in the Bronx and Staten Island was relatively even. However, in Brooklyn, Manhattan, and Queens, one tree species was clearly in better health compared to the others. In Brooklyn, that species was the London Planetree, in Manhattan it was the Honeylocust, and in Queens it was the Norway Maple. The tree species that was relatively in poor health was the Norway Maple.
+
+```{r Most Popular and Health 2005, echo=FALSE, fig.height=7, fig.width=10, message=FALSE}
+
+mostPop2005 <- nytrees_2005 %>%
+    group_by(spc_common) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+mostPopData2005 <- filter(nytrees_2005, spc_common == c("HONEYLOCUST","LONDON PLANETREE","MAPLE, NORWAY", "OAK, PIN","PEAR, CALLERY"))
+
+mostPopFinal2005 <- mostPopData2005 %>%
+    group_by(spc_common, boroname, status) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+ggplot(
+  data = mostPopFinal2005, 
+  aes(x = status, y = count, fill = spc_common)) +
+  geom_col() +
+  facet_wrap(.~boroname, scales = "free") +
+  theme_minimal() + 
+  xlab("Condition of Tree (Scale of Dead to Excellent, including Unknown)")+
+  ylab("Count of Trees") +
+  ggtitle("The Health of the Most Popular Tree Species in 2005 by Borough")+
+  labs(fill = "5 Most Popular Species")
+  
+```
+
+In 2005, data showed that only the Bronx had relatively even ratios of tree species in excellent health. In Staten Island, the Pear,Callery tree was the healthiest, in Brooklyn it was the London Planetree, and in Manhattan it was the Honeylocust. In Queens, the Norway Maple was the healthiest tree, but by a much smaller margin than in 1995. The Norway Maple was also the tree species in the poorest health in Queens, but the ratios of species in poor health were less dramatic in the other boroughs.
+
+```{r Most Popular and Health 2015, echo=FALSE, fig.height=5, fig.width=10, message=FALSE, warning=FALSE}
+
+mostPop2015 <- nytrees_2015 %>%
+    group_by(spc_common) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+mostPopData2015 <- filter(nytrees_2015, spc_common == c("Callery pear","honeylocust","London planetree", "Norway maple","pin oak"))
+
+mostPopFinal2015 <- mostPopData2015 %>%
+    group_by(spc_common, borough, health) %>%
+    summarise(count = n()) %>%
+    top_n(n = 5, wt = count)
+
+ggplot(
+  data = mostPopFinal2015, 
+  aes(x = health, y = count, fill = spc_common)) +
+  geom_col() +
+  facet_wrap(.~borough, scales = "free") +
+  theme_minimal() + 
+  xlab("Condition of Tree (Scale of Dead to Excellent, including Unknown)")+
+  ylab("Count of Trees") +
+  ggtitle("The Health of the Most Popular Tree Species in 2015 by Borough")+
+  labs(fill = "5 Most Popular Species")
+  
+```
+
+By 2015, the data showed that the ratios of tree species in fair and poor health were relatively even once again. However, the species in good health differed widely by borough. In Brooklyn and Queens, the London Planetree was the most popular tree in good health, while in Manhattan and the Bronx, it was the Honeylocust. In Staten Island, it was the Pear, Callery tree. This analysis demonstrates that even when there are increases or decreases in tree species populations, the health of individual trees can vary greatly and can be a predictor of future changes in popularity. For example, if a tree species has a high proportion of trees in poor health, it may decline in popularity and be planted less frequently. On the other hand, if a tree species has a high proportion of trees in good or excellent health, it may increase in popularity and be planted more frequently. Understanding the health of tree species can provide important information for city planners and residents to help maintain and improve the urban forest in New York City.
+
+## Final Thoughts
+
+In conclusion, the data shows that New York City has undergone significant changes in terms of tree species and health over the years. It has been interesting to research how different factors have affected tree health, and how invasive species can can be incredibly detrimental to native species health. Overall, it appears that the efforts of the city's Parks department and other advocacy groups and agencies have been successful in improving the health of the urban forest and mitigating the effects of climate change in New York City.
+
