@@ -389,48 +389,7 @@ For sample excess kurtosis, the positive value indicates that the tree species p
 
 #### [Specifying Population Growth and Changes in Health by Tree Species]{.underline}
 
-After looking at the summary table of tree species, we decided to subset the data and just focus on the most popular species and analyze how the species themselves and their health changes over the years.
-
-After reviewing the summary table of tree species, we decided to narrow our focus and consider the most common species in our analysis. This will allowed us to better understand how the health and abundance of these species changed over the years. By sub-setting the data in this way, we were able to gain a more detailed and nuanced understanding of the tree population in the city.
-
-```{r Most Popular Species Tables, echo=FALSE, fig.show='hold', message=FALSE, warning=FALSE}
-#most popular tree species
-mostPopular_1995 <- data.frame(sort(table(nytrees_1995$Spc_Common), decreasing = TRUE))
-mostPopular_2005 <- data.frame(sort(table(nytrees_2005$spc_common), decreasing = TRUE))
-mostPopular_2015 <- data.frame(sort(table(nytrees_2015$spc_common), decreasing = TRUE))
-
-
-# Use the colnames function to specify the column names
-colnames(mostPopular_1995) <- c("Tree Species", "Total Number")
-colnames(mostPopular_2005) <- c("Tree Species", "Total Number")
-colnames(mostPopular_2015) <- c("Tree Species", "Total Number")
-
-# View the resulting table 
-#1995
-kbl(head(mostPopular_1995, 5), caption = "Top 5 common tree Species in 1995" )%>%
-  kable_styling(bootstrap_options = "bordered" )%>%
-  kable_paper(full_width = F)
-
-
-#2005
-kbl(head(mostPopular_2005, 5), caption = "Top 5 common tree Species in 2005" )%>%
-  kable_styling(bootstrap_options = "bordered")%>%
-  kable_paper(full_width = F)
-
-
-#2015
-kbl(head(mostPopular_2015, 5), caption = "Top 5 common tree Species in 2015" )%>%
-  kable_styling(bootstrap_options = "bordered")%>%
-  kable_paper(full_width = F)
-
-
-
-```
-
-From the tables above, we can see the top five tree species in each year and how many times they were planted. We can see that the Norway Maple species went from being the most commonly planted trees in 1995 to being among the least commonly planted in 2015.In 1995, we can see that the Norway Maple was the most popular species by a large margin. This, however, was problematic because Norway Maple Trees are an invasive species native to Continental Europe, Southern Norway, and Western Asia ^[https://nyis.info/invasive_species/norway-maple/]. Invasive species are any organism that are brought into a non-native environment and harm this new environment ^[https://www.invasivespeciesinfo.gov/what-are-invasive-species]. Norway Maple Trees aid in declining biodiversity and make it harder for native species to make it to maturity. Callery Pear Trees are also invasive species, native to East Asia, specifically China and Vietnam^[https://naturewalk.yale.edu/trees/rosaceae/pyrus-calleryana/callery-pear-tree-33#:~:text=The%20Callery%20pear%20tree%20is,unpleasant%20odor%20in%20early%20spring.]. In contrast, the Honeylocust species increased in popularity, going from being the second-to-last most commonly planted tree species in 1995 to the second-most commonly planted in 2015. Overall, the data shows that the London Plantree is the most commonly planted tree species in New York City as of 2015. The London Planetree is a hybrid between an American Sycamore and a Non-Native tree^[https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/london-plane/]. The Pin Oak^[https://www.britannica.com/plant/pin-oak] and HoneyLocust^[https://www.srs.fs.usda.gov/pubs/misc/ag_654/volume_2/gleditsia/triacanthos.htm#:~:text=Native%20Range,through%20Alabama%20to%20western%20Maryland.] are both species native to North America. Knowing this, it is incomprehensibly good that the invasive species are slowly becoming less popular, and the native tree species are becoming more popular. I was unable to find if this is an a focused effort on the Parks' Department part, but either way it is amazing news for the native New York species who rely on these native trees. The Norway Maple's decline in count in particularly notable, considering it was the most popular species in 1995, and had expereinced a loss of 75,000 trees by 2015. 
-
-
-The barplot below shows the health condition of different tree species over time. This information can help us understand whether the health of a tree species has influenced its popularity. For example, if a tree species has a high proportion of trees in poor health, it may be less popular among city residents and city planners. On the other hand, if a tree species has a high proportion of trees in excellent health, it may be more popular and widely planted. By comparing the health of tree species to their popularity, we can gain insights into the factors that influence the popularity of tree species in New York City.
+Continuing our analysis, we decided to look closer at tree health. The barplot below shows the health condition of different tree species over time. This information can help us understand whether the health of a tree species has influenced its popularity. For example, if a tree species has a high proportion of trees in poor health, it may be less popular among city residents and city planners. On the other hand, if a tree species has a high proportion of trees in excellent health, it may be more popular and widely planted. By comparing the health of tree species to their popularity, we can gain insights into the factors that influence the popularity of tree species in New York City.
 
 ```{r Tree Condition 1995, echo=FALSE, fig.height=10, fig.width=20, message=FALSE, warning=FALSE}
 ##The most common species given the Health Condition 
@@ -717,9 +676,51 @@ nytrees_2015 %>%
 
 In 2015, the data showed a similar trend to the previous two decades.However, the differences between the boroughs in terms of the number of trees experiencing a specific condition became more pronounced. For example, the gap between the number of dead trees in Queens and the number of dead trees in the Bronx, Staten Island, and Brooklyn increased. This suggests that the condition of trees in the boroughs was becoming more varied over time.
 
-#### [Visualizing using Bar plot on the most common species per borough]{.underline}
+#### [Analyzing Popular Tree Species]{.underline}
 
-In this analysis, we will focus on exploring which tree species are the most popular in each borough of New York City. By looking at the data in this way, we can gain insights into the preferences of city residents and city planners in each borough and how they have changed over time. Additionally, we can see how the popularity of tree species varies across the different boroughs and what factors may influence these differences.
+After looking at the summary table of tree species, we decided to subset the data and just focus on the most popular species and analyze how the species themselves and their health changes over the years.
+
+After reviewing the summary table of tree species, we decided to narrow our focus and consider the most common species in our analysis. This will allowed us to better understand how the health and abundance of these species changed over the years. By sub-setting the data in this way, we were able to gain a more detailed and nuanced understanding of the tree population in the city.
+
+```{r Most Popular Species Tables, echo=FALSE, fig.show='hold', message=FALSE, warning=FALSE}
+#most popular tree species
+mostPopular_1995 <- data.frame(sort(table(nytrees_1995$Spc_Common), decreasing = TRUE))
+mostPopular_2005 <- data.frame(sort(table(nytrees_2005$spc_common), decreasing = TRUE))
+mostPopular_2015 <- data.frame(sort(table(nytrees_2015$spc_common), decreasing = TRUE))
+
+
+# Use the colnames function to specify the column names
+colnames(mostPopular_1995) <- c("Tree Species", "Total Number")
+colnames(mostPopular_2005) <- c("Tree Species", "Total Number")
+colnames(mostPopular_2015) <- c("Tree Species", "Total Number")
+
+# View the resulting table 
+#1995
+kbl(head(mostPopular_1995, 5), caption = "Top 5 common tree Species in 1995" )%>%
+  kable_styling(bootstrap_options = "bordered" )%>%
+  kable_paper(full_width = F)
+
+
+#2005
+kbl(head(mostPopular_2005, 5), caption = "Top 5 common tree Species in 2005" )%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+
+#2015
+kbl(head(mostPopular_2015, 5), caption = "Top 5 common tree Species in 2015" )%>%
+  kable_styling(bootstrap_options = "bordered")%>%
+  kable_paper(full_width = F)
+
+
+
+```
+
+From the tables above, we can see the top five tree species in each year and how many times they were planted. We can see that the Norway Maple species went from being the most commonly planted trees in 1995 to being among the least commonly planted in 2015.In 1995, we can see that the Norway Maple was the most popular species by a large margin. This, however, was problematic because Norway Maple Trees are an invasive species native to Continental Europe, Southern Norway, and Western Asia ^[https://nyis.info/invasive_species/norway-maple/]. Invasive species are any organism that are brought into a non-native environment and harm this new environment ^[https://www.invasivespeciesinfo.gov/what-are-invasive-species]. Norway Maple Trees aid in declining biodiversity and make it harder for native species to make it to maturity. Callery Pear Trees are also invasive species, native to East Asia, specifically China and Vietnam^[https://naturewalk.yale.edu/trees/rosaceae/pyrus-calleryana/callery-pear-tree-33#:~:text=The%20Callery%20pear%20tree%20is,unpleasant%20odor%20in%20early%20spring.]. In contrast, the Honeylocust species increased in popularity, going from being the second-to-last most commonly planted tree species in 1995 to the second-most commonly planted in 2015. Overall, the data shows that the London Plantree is the most commonly planted tree species in New York City as of 2015. The London Planetree is a hybrid between an American Sycamore and a Non-Native tree^[https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/british-trees/a-z-of-british-trees/london-plane/]. The Pin Oak^[https://www.britannica.com/plant/pin-oak] and HoneyLocust^[https://www.srs.fs.usda.gov/pubs/misc/ag_654/volume_2/gleditsia/triacanthos.htm#:~:text=Native%20Range,through%20Alabama%20to%20western%20Maryland.] are both species native to North America. Knowing this, it is incomprehensibly good that the invasive species are slowly becoming less popular, and the native tree species are becoming more popular. I was unable to find if this is an a focused effort on the Parks' Department part, but either way it is amazing news for the native New York species who rely on these native trees. The Norway Maple's decline in count in particularly notable, considering it was the most popular species in 1995, and had expereinced a loss of 75,000 trees by 2015. 
+
+
+
+To further analyze this, we will focus on exploring which tree species are the most popular in each borough of New York City. By looking at the data in this way, we can gain insights into the preferences of city residents and city planners in each borough and how they have changed over time. Additionally, we can see how the popularity of tree species varies across the different boroughs and what factors may influence these differences.
 
 ```{r Tree Popularity by Borough 1995, echo=FALSE, fig.height=15, fig.width=25, message=FALSE, warning=FALSE}
 
